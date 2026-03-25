@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Alternate Credit Scorer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar glass-panel">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-shield-halved"></i> 
+                <span>Alt-Credit AI</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item active" data-target="dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</li>
+                <li class="nav-item" data-target="assessment"><i class="fa-solid fa-scale-balanced"></i> Assessment</li>
+                <li class="nav-item" data-target="intelligence" id="nav-intelligence"><i class="fa-solid fa-brain"></i> Intelligence</li>
+            </ul>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-workspace">
+            <header class="top-header glass-panel">
+                <div class="header-left">
+                    <h1 id="page-title">Operational Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <div class="header-metadata">
+                        <span id="header-timestamp"><i class="fa-solid fa-clock"></i> --:--</span>
+                        <span id="header-txid" class="glow-text"><i class="fa-solid fa-fingerprint"></i> ID: CR-PENDING</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-tabs" id="printable-area">
+                
+                <!-- VIEW 1: DASHBOARD -->
+                <section id="tab-dashboard" class="tab-pane active fade-in">
+                    <div class="dashboard-layout">
+                        <!-- Metric Cards -->
+                        <div class="metrics-row">
+                            <div class="metric-card glass-card">
+                                <h3><i class="fa-solid fa-file-signature"></i> Total Audits Today</h3>
+                                <div class="metric-val" id="metric-audits">0</div>
+                            </div>
+                            <div class="metric-card glass-card">
+                                <h3><i class="fa-solid fa-chart-pie"></i> Avg. Risk Prob</h3>
+                                <div class="metric-val" id="metric-risk">0.0%</div>
+                            </div>
+                            <div class="metric-card glass-card">
+                                <h3><i class="fa-solid fa-check-double"></i> Approval Rate</h3>
+                                <div class="progress-bar-container">
+                                    <div class="progress-fill" id="metric-approval-bar" style="width: 0%;"></div>
+                                </div>
+                                <div class="metric-subval" id="metric-approval-text">0% Approved</div>
+                            </div>
+                        </div>
+
+                        <!-- Activity Table -->
+                        <div class="activity-section glass-card">
+                            <div class="activity-header">
+                                <h2><i class="fa-solid fa-list-check"></i> Recent Audits</h2>
+                                <div class="search-box">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <input type="text" id="search-audit" placeholder="Search ID...">
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table class="audit-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Transaction ID</th>
+                                            <th>Date & Time</th>
+                                            <th>Risk Level</th>
+                                            <th>Final Decision</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="audit-table-body">
+                                        <!-- JS Populated -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 2: RISK ASSESSMENT -->
+                <section id="tab-assessment" class="tab-pane fade-in">
+                    <div class="assessment-layout">
+                        <!-- Left Column: Inputs -->
+                        <div class="eval-column">
+                            <section class="glass-card panel-inputs">
+                                <h2><i class="fa-solid fa-users-viewfinder"></i> Customer Data</h2>
+                                <form id="prediction-form">
+                                    <div class="input-group-row">
+                                        <div class="input-group">
+                                            <label for="monthly_income">Monthly Income ($)</label>
+                                            <input type="number" id="monthly_income" placeholder="e.g., 5000" min="0" step="1" required>
+                                        </div>
+                                        <div class="input-group">
+                                            <label for="debt_ratio">Debt Ratio</label>
+                                            <input type="number" id="debt_ratio" placeholder="e.g., 0.35" min="0" step="0.01" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="input-group-row">
+                                        <div class="input-group">
+                                            <label for="revolving_util">Revolving Utilization (<span id="util_val">30</span>%)</label>
+                                            <input type="range" id="revolving_util" min="0" max="100" value="30" step="1">
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group-row">
+                                        <div class="input-group counter-group">
+                                            <label>Late (30-59d)</label>
+                                            <div class="counter-controls">
+                                                <button type="button" class="counter-btn" onclick="updateCounter('late_30_59', -1)"><i class="fa-solid fa-minus"></i></button>
+                                                <input type="number" id="late_30_59" value="0" min="0" readonly>
+                                                <button type="button" class="counter-btn" onclick="updateCounter('late_30_59', 1)"><i class="fa-solid fa-plus"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="input-group counter-group">
+                                            <label>Late (90d+)</label>
+                                            <div class="counter-controls">
+                                                <button type="button" class="counter-btn" onclick="updateCounter('late_90', -1)"><i class="fa-solid fa-minus"></i></button>
+                                                <input type="number" id="late_90" value="0" min="0" readonly>
+                                                <button type="button" class="counter-btn" onclick="updateCounter('late_90', 1)"><i class="fa-solid fa-plus"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group-row">
+                                        <div class="input-group">
+                                            <label for="age">Age</label>
+                                            <input type="number" id="age" placeholder="e.g., 40" min="18" max="120" step="1" required>
+                                        </div>
+                                        <div class="input-group">
+                                            <label for="open_lines">Open Credit Lines</label>
+                                            <input type="number" id="open_lines" placeholder="e.g., 5" min="0" step="1" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group submit-group" style="margin-top: 1rem;">
+                                        <button type="submit" id="submit-btn" class="btn-primary" style="width: 100%;">Run AI Assessment <i class="fa-solid fa-microchip"></i></button>
+                                    </div>
+                                </form>
+                            </section>
+                        </div>
+
+                        <!-- Right Column: Results -->
+                        <div class="eval-column">
+                            <section class="glass-card panel-results">
+                                <h2><i class="fa-solid fa-bullseye"></i> Live Result</h2>
+                                
+                                <div id="loading-spinner" class="spinner-container hidden">
+                                    <div class="spinner"></div>
+                                    <p>Connecting to Engine...</p>
+                                </div>
+
+                                <div id="result-content" class="result-content">
+                                    <!-- Status Badge -->
+                                    <div class="decision-badge badge-pending" id="decision-badge">
+                                        <i class="fa-solid fa-circle-notch fa-spin"></i> <span id="decision-text">AWAITING INPUT</span>
+                                    </div>
+
+                                    <!-- Circular Gauge -->
+                                    <div class="probability-container">
+                                        <div class="gauge" id="prob-gauge" style="--value: 0; --gauge-color: var(--text-muted);">
+                                            <div class="gauge-center">
+                                                <span class="gauge-value" id="prob-value">--</span>
+                                                <span class="gauge-label">Default Risk</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Expandable 1: Drivers -->
+                                    <details class="expandable-card" id="details-drivers">
+                                        <summary><i class="fa-solid fa-chart-bar"></i> Decision Drivers</summary>
+                                        <div class="expand-content">
+                                            <div id="drivers-chart" class="drivers-chart">
+                                                <p class="mock-text">Run assessment to see drivers.</p>
+                                            </div>
+                                        </div>
+                                    </details>
+
+                                    <!-- Expandable 2: Approval Path -->
+                                    <details class="expandable-card" id="details-path">
+                                        <summary><i class="fa-solid fa-route"></i> Path to Approval</summary>
+                                        <div class="expand-content">
+                                            <ul id="simulation-list" class="simulation-list">
+                                                <p class="mock-text">Run assessment to see simulations.</p>
+                                            </ul>
+                                        </div>
+                                    </details>
+
+                                    <!-- PDF Download (Assessment Only) -->
+                                    <button id="pdf-btn" class="btn-primary btn-pdf" style="width:100%; margin-top:1.5rem;">
+                                        <i class="fa-solid fa-file-pdf"></i> Download Assessment Report
+                                    </button>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 3: INTELLIGENCE -->
+                <section id="tab-intelligence" class="tab-pane fade-in">
+                    <div class="intelligence-layout">
+                        <!-- Top Row: Trend Chart -->
+                        <section class="glass-card full-width">
+                            <h2><i class="fa-solid fa-arrow-trend-up"></i> 6-Month Credit Utilization Trend</h2>
+                            <div class="timeline-container" id="intell-timeline">
+                                <p class="mock-text" style="align-self:center; width:100%;">Set utilization in Assessment to view trend.</p>
+                            </div>
+                        </section>
+
+                        <div class="intell-bottom-grid">
+                            <!-- Bottom Left: Peer Benchmarking -->
+                            <section class="glass-card">
+                                <h2><i class="fa-solid fa-users"></i> Peer Benchmarking</h2>
+                                <div id="benchmark-chart" class="benchmark-chart" style="margin-top: 1rem;">
+                                    <p class="mock-text">Run assessment to view peer comparison.</p>
+                                </div>
+                            </section>
+
+                            <!-- Bottom Right: Sensitivity Matrix -->
+                            <section class="glass-card">
+                                <h2><i class="fa-solid fa-border-all"></i> Sensitivity Matrix (Income vs Debt)</h2>
+                                <p class="section-desc" style="margin-bottom:1rem;">How a ±10% shift affects risk</p>
+                                <div class="heatmap-grid" id="sensitivity-matrix">
+                                    <p class="mock-text">Run assessment to generate matrix.</p>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Offline Notification -->
+    <div id="offline-toast" class="toast-notification hidden">
+        <i class="fa-solid fa-triangle-exclamation"></i> Backend Offline. Cannot run assessment.
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
